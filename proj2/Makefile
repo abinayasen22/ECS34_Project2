@@ -1,52 +1,51 @@
-# Nissi
-# Compiler and flags
+# Compiler&flags
 CXX = g++
-CXXFLAGS = -Wall -g
+CXXFLAGS = -std=c++17 -Wall -Wextra
 
-# Directories
-SRC_DIR = src
-OBJ_DIR = obj
-BIN_DIR = bin
+# Directories for object files and binaries
+OBJDIR = obj
+BINDIR = bin
 
 # Source files
-SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+SRCS = StringUtils.cpp StringUtilsTest.cpp \
+		StringDataSource.cpp StringDataSourceTest.cpp \
+		StringDataSink.cpp StringDataSinkTest.cpp \
+		DSVReader.cpp DSVWriter.cpp DSVTest.cpp \
+    	XMLReader.cpp XMLWriter.cpp XMLTest.cpp
 
-# Object files
-OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
+# Object files (automatically generated from source files)
+OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
 
-# Executable files
-TESTS = teststrutils teststrdatasource teststrdatasink testdsv testxml
+# Test executables
+TARGETS = $(BINDIR)/teststrutils $(BINDIR)/teststrdatasource $(BINDIR)/teststrdatasink 
 
-# Default target
-all: $(TESTS)
+# create directories if nonexistent
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
-# Pattern rule for object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BINDIR):
+	mkdir -p $(BINDIR)
+
+# build object files
+$(OBJDIR)/%.o: %.cpp | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Pattern rule for test executables
-$(BIN_DIR)/%: $(OBJ_DIR)/%.o
-	$(CXX) $(CXXFLAGS) $< -o $@
+# link executables
+$(BINDIR)/teststrutils: $(OBJDIR)/StringUtils.o $(OBJDIR)/StringUtilsTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-# Test targets
-teststrutils: $(BIN_DIR)/teststrutils
-	$(BIN_DIR)/teststrutils
+$(BINDIR)/teststrdatasource: $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSourceTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-teststrdatasource: $(BIN_DIR)/teststrdatasource
-	$(BIN_DIR)/teststrdatasource
+$(BINDIR)/teststrdatasink: $(OBJDIR)/StringDataSink.o $(OBJDIR)/StringDataSinkTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-teststrdatasink: $(BIN_DIR)/teststrdatasink
-	$(BIN_DIR)/teststrdatasink
+# run
+test: $(TARGETS)
+	@for target in $(TARGETS); do \
+		./$$target || exit 1; \
+	done
 
-testdsv: $(BIN_DIR)/testdsv
-	$(BIN_DIR)/testdsv
-
-testxml: $(BIN_DIR)/testxml
-	$(BIN_DIR)/testxml
-
-# Clean target
+# remove obj and bin directories
 clean:
-	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/*
-
-# Phony targets
-.PHONY: all clean $(TESTS)
+	rm -rf $(OBJDIR) $(BINDIR)
