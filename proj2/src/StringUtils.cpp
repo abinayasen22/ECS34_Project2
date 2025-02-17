@@ -142,10 +142,12 @@ std::string Join(const std::string &str, const std::vector< std::string > &vect)
 std::string ExpandTabs(const std::string &str, int tabsize) noexcept{
     std::string new_str = str; //create new string copy for replacment
     size_t first_tab = new_str.find('\t'); //find first index/position of tab
+    size_t column = 0;
     while (first_tab != std::string::npos) { //while tab exists
-        int spaces = tabsize - (first_tab % tabsize); //calculate spaces needed to replace tab
+        column = first_tab;
+        int spaces = tabsize - (column % tabsize); //calculate spaces needed to replace tab
         new_str.replace(first_tab, 1, std::string(spaces, ' ')); //replace tab with calculated spaces
-        first_tab = new_str.find('\t', first_tab + 1); //find next tab
+        first_tab = new_str.find('\t', first_tab + spaces); //find next tab
     }
     return new_str;
 }
