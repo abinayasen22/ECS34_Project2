@@ -56,7 +56,7 @@ TEST(StringUtilsTest, Replace){
 }
 
 TEST(StringUtilsTest, Split){
-    EXPECT_EQ(Split("hello world"), "hello", "world");
+    EXPECT_EQ(Split("hello world", " "), std::vector<std::string>{"hello", "world"});
 }
 
 TEST(StringUtilsTest, Join){
