@@ -1,52 +1,62 @@
-# Nissi
-# Compiler and flags
+# Makefile for ECS34 Project 2
+
 CXX = g++
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -Wextra -std=c++11
+LDFLAGS =
 
 # Directories
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
+DOC_DIR = docs
 
 # Source files
 SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+DEPS = $(OBJS:.o=.d)
 
-# Object files
-OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
-
-# Executable files
+# Executables
 TESTS = teststrutils teststrdatasource teststrdatasink testdsv testxml
 
 # Default target
 all: $(TESTS)
 
-# Pattern rule for object files
+# Include dependency files
+-include $(DEPS)
+
+# Rule to build object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-# Pattern rule for test executables
-$(BIN_DIR)/%: $(OBJ_DIR)/%.o
-	$(CXX) $(CXXFLAGS) $< -o $@
+# Rules to build test executables
+teststrutils: $(OBJ_DIR)/teststrutils.o
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(LDFLAGS) $^ -o $(BIN_DIR)/$@
 
-# Test targets
-teststrutils: $(BIN_DIR)/teststrutils
-	$(BIN_DIR)/teststrutils
+teststrdatasource: $(OBJ_DIR)/teststrdatasource.o
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(LDFLAGS) $^ -o $(BIN_DIR)/$@
 
-teststrdatasource: $(BIN_DIR)/teststrdatasource
-	$(BIN_DIR)/teststrdatasource
+teststrdatasink: $(OBJ_DIR)/teststrdatasink.o
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(LDFLAGS) $^ -o $(BIN_DIR)/$@
 
-teststrdatasink: $(BIN_DIR)/teststrdatasink
-	$(BIN_DIR)/teststrdatasink
+testdsv: $(OBJ_DIR)/testdsv.o
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(LDFLAGS) $^ -o $(BIN_DIR)/$@
 
-testdsv: $(BIN_DIR)/testdsv
-	$(BIN_DIR)/testdsv
+testxml: $(OBJ_DIR)/testxml.o
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(LDFLAGS) $^ -o $(BIN_DIR)/$@
 
-testxml: $(BIN_DIR)/testxml
-	$(BIN_DIR)/testxml
-
-# Clean target
+# Clean up build artifacts
 clean:
-	rm -f $(OBJ_DIR)/*.o $(BIN_DIR)/*
+	rm -rf $(OBJ_DIR) $(BIN_DIR) $(DOC_DIR)
 
-# Phony targets
-.PHONY: all clean $(TESTS)
+# Create documentation
+docs:
+	@mkdir -p $(DOC_DIR)
+	doxygen Doxyfile
+
+.PHONY: all clean docs
