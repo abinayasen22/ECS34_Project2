@@ -1,73 +1,63 @@
-# Compiler and flags
+# Compiler&flags
 CXX = g++
-CXXFLAGS = -std=c++17 -I./include -g
-LDFLAGS = -lexpat
+CXXFLAGS = -std=c++17 -Wall -Wextra -I./include
 
-# Directories
-SRC_DIR = src
-TEST_DIR = testsrc
-OBJ_DIR = obj
-BIN_DIR = bin
+# Directories for object files and binaries
+OBJDIR = obj
+BINDIR = bin
+SRCDIR = src
+TESTDIR = testsrc
+INCLUDEDIR = include
 
-# Source files and test files
-SRC_FILES = $(SRC_DIR)/DSVReader.cpp $(SRC_DIR)/DSVWriter.cpp $(SRC_DIR)/XMLReader.cpp $(SRC_DIR)/XMLWriter.cpp
-TEST_FILES = $(TEST_DIR)/DSVTest.cpp $(TEST_DIR)/XMLTest.cpp
+# Source files
+SRCS = $(wildcard $(SRCDIR)/*.cpp)
 
-# Object files
-OBJ_FILES = $(SRC_FILES:.cpp=.o)
-TEST_OBJ_FILES = $(TEST_FILES:.cpp=.o)
+TESTS = $(wildcard $(TESTDIR)/*Test.cpp)
+# Object files (automatically generated from source files)
+OBJS = $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o) $(TESTS:$(TESTDIR)/%.cpp=$(OBJDIR)/%.o)
 
-# Executables
-EXEC_TEST_DSV = $(BIN_DIR)/testdsv
-EXEC_TEST_XML = $(BIN_DIR)/testxml
-EXEC_TEST_STRUTILS = $(BIN_DIR)/teststrutils
-EXEC_TEST_STRDATASOURCE = $(BIN_DIR)/teststrdatasource
-EXEC_TEST_STRDATASINK = $(BIN_DIR)/teststrdatasink
+# Test executables
+TARGETS = $(BINDIR)/teststrutils $(BINDIR)/teststrdatasource $(BINDIR)/teststrdatasink $(BINDIR)/testdsv $(BINDIR)/testxml
 
-# Targets
-all: $(EXEC_TEST_STRUTILS) $(EXEC_TEST_STRDATASOURCE) $(EXEC_TEST_STRDATASINK) $(EXEC_TEST_DSV) $(EXEC_TEST_XML)
+all: $(TARGETS)
 
-# Rule to link test executables
-$(EXEC_TEST_STRUTILS): $(OBJ_FILES) $(TEST_OBJ_FILES)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(TEST_OBJ_FILES) -o $@ $(LDFLAGS)
+# create directories if nonexistent
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
-$(EXEC_TEST_STRDATASOURCE): $(OBJ_FILES) $(TEST_OBJ_FILES)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(TEST_OBJ_FILES) -o $@ $(LDFLAGS)
+$(BINDIR):
+	mkdir -p $(BINDIR)
 
-$(EXEC_TEST_STRDATASINK): $(OBJ_FILES) $(TEST_OBJ_FILES)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(TEST_OBJ_FILES) -o $@ $(LDFLAGS)
-
-$(EXEC_TEST_DSV): $(OBJ_FILES) $(TEST_OBJ_FILES)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(TEST_OBJ_FILES) -o $@ $(LDFLAGS)
-
-$(EXEC_TEST_XML): $(OBJ_FILES) $(TEST_OBJ_FILES)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(TEST_OBJ_FILES) -o $@ $(LDFLAGS)
-
-# Rule to compile object files for source files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
+# build object files
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+	
+$(OBJDIR)/%.o: $(TESTDIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Rule to compile object files for test files
-$(OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# link executables
+$(BINDIR)/teststrutils: $(OBJDIR)/StringUtils.o $(OBJDIR)/StringUtilsTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-# Clean up object and binary files
+$(BINDIR)/teststrdatasource: $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSourceTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
+
+$(BINDIR)/teststrdatasink: $(OBJDIR)/StringDataSink.o $(OBJDIR)/StringDataSinkTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
+
+$(BINDIR)/testdsv: $(OBJDIR)/DSVReader.o $(OBJDIR)/DSVWriter.o $(OBJDIR)/DSVTest.o $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSink.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
+
+$(BINDIR)/testxml: $(OBJDIR)/XMLReader.o $(OBJDIR)/XMLWriter.o $(OBJDIR)/XMLTest.o $(OBJDIR)/StringDataSource.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -lexpat -o $@
+# run
+test: $(TARGETS)
+	@for target in $(TARGETS); do \
+		./$$target || exit 1; \
+	done
+
+# remove obj and bin directories
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
-
-# Run all the tests in order
-run_tests: $(EXEC_TEST_STRUTILS) $(EXEC_TEST_STRDATASOURCE) $(EXEC_TEST_STRDATASINK) $(EXEC_TEST_DSV) $(EXEC_TEST_XML)
-	$(EXEC_TEST_STRUTILS)
-	$(EXEC_TEST_STRDATASOURCE)
-	$(EXEC_TEST_STRDATASINK)
-	$(EXEC_TEST_DSV)
-	$(EXEC_TEST_XML)
-
-.PHONY: clean run_tests all
+	rm -rf $(OBJDIR) $(BINDIR)
+	
+.PHONY: all test clean
