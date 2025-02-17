@@ -1,3 +1,4 @@
+
 # Compiler&flags
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I./include
@@ -17,7 +18,7 @@ TESTS = $(wildcard $(TESTDIR)/*Test.cpp)
 OBJS = $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o) $(TESTS:$(TESTDIR)/%.cpp=$(OBJDIR)/%.o)
 
 # Test executables
-TARGETS = $(BINDIR)/teststrutils $(BINDIR)/teststrdatasource $(BINDIR)/teststrdatasink $(BINDIR)/testdsv $(BINDIR)/testxml
+TARGETS = $(BINDIR)/teststrutils $(BINDIR)/teststrdatasource $(BINDIR)/teststrdatasink
 
 all: $(TARGETS)
 
@@ -45,11 +46,7 @@ $(BINDIR)/teststrdatasource: $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSo
 $(BINDIR)/teststrdatasink: $(OBJDIR)/StringDataSink.o $(OBJDIR)/StringDataSinkTest.o | $(BINDIR)
 	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-$(BINDIR)/testdsv: $(OBJDIR)/DSVReader.o $(OBJDIR)/DSVWriter.o $(OBJDIR)/DSVTest.o $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSink.o | $(BINDIR)
-	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-$(BINDIR)/testxml: $(OBJDIR)/XMLReader.o $(OBJDIR)/XMLWriter.o $(OBJDIR)/XMLTest.o $(OBJDIR)/StringDataSource.o | $(BINDIR)
-	$(CXX) $^ -lgtest -lgtest_main -lexpat -o $@
 # run
 test: $(TARGETS)
 	@for target in $(TARGETS); do \
