@@ -1,3 +1,4 @@
+# Nissi
 # Compiler and flags
 CXX = g++
 CXXFLAGS = -Wall -g
