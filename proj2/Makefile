@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I./include
 
 # Linker flags (add -lexpat to the linker flags)
-# LDFLAGS = -lexpat
+LDFLAGS = -lexpat
 
 # Directories for object files and binaries
 OBJDIR = obj
