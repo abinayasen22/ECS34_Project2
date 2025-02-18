@@ -56,7 +56,6 @@ bool CDSVReader::ReadRow(std::vector<std::string>& row) {
                 }
             } else {
                 inQuotes = true; // going into quotes
-                value += ch; // 
             }
         } else {
             value += ch;    // add current char to value 
