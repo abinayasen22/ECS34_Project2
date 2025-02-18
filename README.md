@@ -2,3 +2,4 @@
 2. Used csiflabs.cs.ucdavis.edu.~tyfeng.ecs34.C++.dynamicMemory.html – Page the content is on: 15  to help with SImplementation in Reader and Writer.cpp codes
 3. Used CourseAssist AI to assist with understanding XML parsing concepts
 4. Used  CourseAssist AI to assist in how to implement testing code for DSVTest.cpp file
+5. https://www.geeksforgeeks.org/csv-file-management-using-c/ - used to gain an understanding of the DSV file management
