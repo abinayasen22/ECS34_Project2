@@ -8,7 +8,7 @@
 class CXMLWriter{
     private:
         struct SImplementation;
-        std::unique_ptr<SImplementation> DImplementation;
+        std::unique_ptr<SImplementation> implementation;
         
     public:
         CXMLWriter(std::shared_ptr< CDataSink > sink);

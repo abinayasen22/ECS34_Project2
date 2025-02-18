@@ -8,7 +8,7 @@
 class CDSVWriter{
     private:
         struct SImplementation;
-        std::unique_ptr<SImplementation> DImplementation;
+        std::unique_ptr<SImplementation> implementation;
 
     public:
         CDSVWriter(std::shared_ptr< CDataSink > sink, char delimiter, bool quoteall = false);
