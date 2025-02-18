@@ -10,16 +10,16 @@
 // or a newline
 struct CDSVWriter::SImplementation {
     std::shared_ptr<CDataSink> DDataSink; // Data sink to write to
-    char DDelimiter; // Delimiter character
+    char delimiter; // Delimiter character
     bool DQuoteAll; // Flag to determine if all fields should be quoted
 
     // Constructor for SImplementation
     SImplementation(std::shared_ptr<CDataSink> sink, char delimiter, bool quoteall)
-        : DDataSink(sink), DDelimiter(delimiter), DQuoteAll(quoteall) {}
+        : DDataSink(sink), delimiter(delimiter), DQuoteAll(quoteall) {}
 
     // Helper function to escape a field if necessary
     std::string EscapeField(const std::string& field) {
-        bool needsQuotes = DQuoteAll || field.find(DDelimiter) != std::string::npos ||
+        bool needsQuotes = DQuoteAll || field.find(delimiter) != std::string::npos ||
                            field.find('\"') != std::string::npos ||
                            field.find('\n') != std::string::npos;
         if (!needsQuotes) {
@@ -46,7 +46,7 @@ struct CDSVWriter::SImplementation {
 
 // Constructor for CDSVWriter
 CDSVWriter::CDSVWriter(std::shared_ptr<CDataSink> sink, char delimiter, bool quoteall)
-    : DImplementation(std::make_unique<SImplementation>(sink, delimiter, quoteall)) {}
+    : implementation(std::make_unique<SImplementation>(sink, delimiter, quoteall)) {}
 
 // Destructor for CDSVWriter
 CDSVWriter::~CDSVWriter() {}
@@ -55,11 +55,11 @@ CDSVWriter::~CDSVWriter() {}
 bool CDSVWriter::WriteRow(const std::vector<std::string>& row) {
     std::stringstream line;
     for (size_t i = 0; i < row.size(); ++i) {
-        line << DImplementation->EscapeField(row[i]); // Escape the field
+        line << implementation->EscapeField(row[i]); // Escape the field
         if (i != row.size() - 1) {
-            line << DImplementation->DDelimiter; // Add delimiter between fields
+            line << implementation->delimiter; // Add delimiter between fields
         }
     }
     line << '\n'; // End of line
-    return DImplementation->WriteString(line.str()); // Write the line to the sink
+    return implementation->WriteString(line.str()); // Write the line to the sink
 }

@@ -8,7 +8,7 @@
 class CDSVReader{
     private:
         struct SImplementation;
-        std::unique_ptr<SImplementation> DImplementation;
+        std::unique_ptr<SImplementation> implementation;
 
     public:
         CDSVReader(std::shared_ptr< CDataSource > src, char delimiter);
