@@ -1,7 +1,8 @@
 #include "DSVReader.h"
 #include "DataSource.h"
+#include <vector>
+#include <string>
 #include <sstream>
-#include <algorithm>
 
 
 struct CDSVReader::SImplementation {
@@ -63,10 +64,6 @@ bool CDSVReader::ReadRow(std::vector<std::string>& row) {
     }
     if (!value.empty()) {
         row.push_back(value); // add last value wihout newline to the row
-    }
-
-    if (ch == '\n' && value.empty()) {
-        row.push_back("");  // add empty field
     }
 
     return true; // Row was successfully read
