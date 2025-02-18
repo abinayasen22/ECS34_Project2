@@ -50,8 +50,9 @@ bool CDSVReader::ReadRow(std::vector<std::string>& row) {
                 if (implementation->source->Peek(next) && next == '"') {
                     value += '"'; // qoute is apart of value
                     implementation->source->Get(ch);  // skip quote
-                } else {
-                    inQuotes = !inQuotes; // reverse inQoutes value
+                } 
+                else {
+                    inQuotes = false; // not within qoutes
                 }
             } else {
                 inQuotes = true; // going into quotes
