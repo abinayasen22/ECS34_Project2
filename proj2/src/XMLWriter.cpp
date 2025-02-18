@@ -1,6 +1,9 @@
 #include "XMLWriter.h"
 #include "DataSink.h"
 
+struct CXMLWriter::SImplementation {
+};
+
 // Constructor for XML writer, sink specifies the data destination
 CXMLWriter::CXMLWriter(std::shared_ptr<CDataSink> sink) {
     // Initialization code here
