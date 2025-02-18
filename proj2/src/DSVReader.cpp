@@ -32,23 +32,37 @@ bool CDSVReader::ReadRow(std::vector<std::string>& row) {
     }
     char ch;
     std::string value; // string of a single value within DSV file
+    bool inQuotes = false; // track quoted values
     row.clear();    // clear vector for new row
 
     while (!implementation->source->End()) {
         implementation->source->Get(ch); // read next character
-        if (ch == '\n') {   // end oof row
+        if (ch == '\n' && !inQuotes) {   // end oof row and not within quotes
             break;
         }
-        if (ch == implementation->delimiter) {  //delimeter reached
+        if (ch == implementation->delimiter && !inQuotes) {  //delimeter reached & not within quotes
             row.push_back(value);   //add value to row vector
             value.clear();  // clear value for next one
+        } 
+        else if(ch == '"') { // quotation mark found
+            if (inQuotes) { 
+                char next;
+                if (implementation->source->Peek(next) && next == '"') {
+                    value += '"'; // qoute is apart of value
+                    implementation->source->Get(ch);  // skip quote
+                } else {
+                    inQuotes = !inQuotes; // reverse inQoutes value
+                }
+            } else {
+                inQuotes = true; // going into quotes
+            }
         } else {
-            value += ch;    //add curr char to value 
+            value += ch;    // add current char to value 
         }
     }
     if (!value.empty()) {
         row.push_back(value); // add last value wihout newline to the row
     }
-    
+
     return true; // Row was successfully read
 }
