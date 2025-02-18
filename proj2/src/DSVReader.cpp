@@ -65,5 +65,9 @@ bool CDSVReader::ReadRow(std::vector<std::string>& row) {
         row.push_back(value); // add last value wihout newline to the row
     }
 
+    if (ch == '\n' && value.empty()) {
+        row.push_back("");  // add empty field
+    }
+
     return true; // Row was successfully read
 }
