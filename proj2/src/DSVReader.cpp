@@ -46,6 +46,9 @@ bool CDSVReader::ReadRow(std::vector<std::string>& row) {
             value += ch;    //add curr char to value 
         }
     }
-
+    if (!value.empty()) {
+        row.push_back(value); // add last value wihout newline to the row
+    }
+    
     return true; // Row was successfully read
 }
