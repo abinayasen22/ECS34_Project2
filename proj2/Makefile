@@ -1,4 +1,3 @@
-
 # Compiler&flags
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I./include
