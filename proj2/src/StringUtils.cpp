@@ -140,6 +140,15 @@ std::string Join(const std::string &str, const std::vector< std::string > &vect)
 
 // Replaces tabs with spaces aligning at the tabstops
 std::string ExpandTabs(const std::string &str, int tabsize) noexcept{
+    if (tabsize == 0) {     // account for tab size 0
+        std::string new_str;    //empty string for result
+        for (char ch : str) {
+            if (ch != '\t') {
+                new_str += ch; // add char to string if not tab
+            }
+        }
+        return new_str; //returns string with tabs removed
+    }
     std::string new_str = str; //create new string copy for replacment
     size_t first_tab = new_str.find('\t'); //find first index/position of tab
     while (first_tab != std::string::npos) { //while tab exists
