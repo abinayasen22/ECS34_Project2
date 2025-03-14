@@ -117,7 +117,7 @@ void CXMLReader::SImplementation::EndElementHandler(void *userData, const char *
     
     // Log the end element and the number of attributes
     //std::cout << "EndElement: " << name << std::endl;
-    std::cout << "No of Attributes: 0" << std::endl; // No attributes in EndElement
+    //std::cout << "No of Attributes: 0" << std::endl; // No attributes in EndElement
     
     impl->CurrentEntity = entity;
     impl->EntityReady = true;
