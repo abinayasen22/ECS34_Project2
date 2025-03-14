@@ -9,28 +9,24 @@
 
 // Implementation for XML Reader
 struct CXMLReader::SImplementation {
-    std::shared_ptr<CDataSource> Source; // Data source for reading XML
-    bool EndOfFile; // Flag to indicate end of file
-    XML_Parser Parser; // Expat XML parser instance
-    SXMLEntity CurrentEntity; // Stores the current parsed entity
-    bool EntityReady; // Indicates if an entity is ready to be processed
-    bool SkipCData; // Determines whether to skip character data (CDATA)
-    std::stringstream logStream;
+    std::shared_ptr<CDataSource> Source;
+    XML_Parser Parser;
+    std::deque<SXMLEntity> EntityQueue; // Queue to store parsed entities
+    bool EndOfFile;
+    bool SkipCData;
 
-    // Constructor initializes the parser and sets handlers
     SImplementation(std::shared_ptr<CDataSource> src)
-        : Source(src), EndOfFile(false), EntityReady(false), SkipCData(false) {
+        : Source(src), EndOfFile(false), SkipCData(false) {
         Parser = XML_ParserCreate(nullptr);
         XML_SetUserData(Parser, this);
         XML_SetElementHandler(Parser, StartElementHandler, EndElementHandler);
         XML_SetCharacterDataHandler(Parser, CharDataHandler);
     }
-    
-    // Destructor frees the parser memory
+
     ~SImplementation() {
         XML_ParserFree(Parser);
     }
-    
+
     bool ReadEntity(SXMLEntity &entity, bool skipcdata);
     static void StartElementHandler(void *userData, const char *name, const char **atts);
     static void EndElementHandler(void *userData, const char *name);
@@ -51,26 +47,36 @@ bool CXMLReader::ReadEntity(SXMLEntity &entity, bool skipcdata) {
     return implementation->ReadEntity(entity, skipcdata);
 }
 
-// Implementation of XML entity reading logic
 bool CXMLReader::SImplementation::ReadEntity(SXMLEntity &entity, bool skipcdata) {
     SkipCData = skipcdata;
-    std::vector<char> line;
-    if (!Source->Read(line, 1024)) { // Read a line from the data source
-        EndOfFile = true;
-        return false;
+
+    // Keep parsing until we have entities or reach EOF
+    while (EntityQueue.empty() && !EndOfFile) {
+        std::vector<char> buffer(1024); // Create a buffer
+        size_t bytesRead = Source->Read(buffer, buffer.size()); // Pass the vector by reference
+
+        if (bytesRead == 0) {
+            EndOfFile = true;
+            XML_Parse(Parser, nullptr, 0, XML_TRUE); // Finalize parsing
+            break;
+        }
+
+        // Resize the buffer to the actual bytes read
+        buffer.resize(bytesRead);
+
+        // Parse the chunk using the buffer's data
+        if (XML_Parse(Parser, buffer.data(), bytesRead, XML_FALSE) == XML_STATUS_ERROR) {
+            EndOfFile = true;
+            return false;
+        }
     }
-    
-    if (XML_Parse(Parser, line.data(), line.size(), XML_FALSE) == XML_STATUS_ERROR) { // Parse XML line
-        EndOfFile = true;
-        return false;
-    }
-    
-    if (EntityReady) { // If an entity is ready, return it
-        entity = CurrentEntity;
-        EntityReady = false;
+
+    if (!EntityQueue.empty()) {
+        entity = EntityQueue.front();
+        EntityQueue.pop_front();
         return true;
     }
-    
+
     return false;
 }
 
@@ -81,65 +87,32 @@ void CXMLReader::SImplementation::StartElementHandler(void *userData, const char
     entity.DType = SXMLEntity::EType::StartElement;
     entity.DNameData = name;
 
-    // Log the element name first
-    impl->logStream << "StartElement: " << name << std::endl;
-
-    // Count and log the number of attributes
-    int numAttrs = 0;
-    std::string attrStr;
-    while (atts[numAttrs]) {
-        std::string attrName = atts[numAttrs];
-        std::string attrValue = atts[numAttrs + 1];
-        if (numAttrs > 0) {
-            attrStr += "\n";
-        }
-        attrStr += attrName + " " + attrValue;
-        numAttrs += 2;
+    // Add attributes
+    for (int i = 0; atts[i] != nullptr; i += 2) {
+        entity.DAttributes.emplace_back(atts[i], atts[i + 1]);
     }
 
-    // Log number of attributes first
-    impl->logStream << "No of Attributes: " << numAttrs / 2 << std::endl;
-
-    // Then log the attributes if available
-    if (!attrStr.empty()) {
-        impl->logStream << attrStr << std::endl;
-    }
-    
-    impl->CurrentEntity = entity;
-    impl->EntityReady = true;
+    impl->EntityQueue.push_back(entity); // Add to queue
 }
 
-// Handler for XML end elements
 void CXMLReader::SImplementation::EndElementHandler(void *userData, const char *name) {
     SImplementation *impl = static_cast<SImplementation*>(userData);
     SXMLEntity entity;
     entity.DType = SXMLEntity::EType::EndElement;
     entity.DNameData = name;
 
-    // Log the end element first
-    impl->logStream << "EndElement: " << name << std::endl;
-
-    // Log number of attributes (always 0 for EndElement)
-    impl->logStream << "No of Attributes: 0" << std::endl;
-
-    impl->CurrentEntity = entity;
-    impl->EntityReady = true;
+    impl->EntityQueue.push_back(entity); // Add to queue
 }
 
-// Handler for character data (CDATA)
 void CXMLReader::SImplementation::CharDataHandler(void *userData, const char *data, int len) {
     SImplementation *impl = static_cast<SImplementation*>(userData);
     if (impl->SkipCData) return;
-    
+
     SXMLEntity entity;
     entity.DType = SXMLEntity::EType::CharData;
     entity.DNameData.assign(data, len);
-    
-    // Log the character data
-    impl->logStream << "CharData: " << entity.DNameData << std::endl;
-    
-    impl->CurrentEntity = entity;
-    impl->EntityReady = true;
+
+    impl->EntityQueue.push_back(entity); // Add to queue
 }
 
 // CXMLReader::CXMLReader(std::shared_ptr< CDataSource > /*src*/) {
