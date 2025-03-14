@@ -112,12 +112,12 @@ void CXMLReader::SImplementation::StartElementHandler(void *userData, const char
 void CXMLReader::SImplementation::EndElementHandler(void *userData, const char *name) {
     SImplementation *impl = static_cast<SImplementation*>(userData);
     SXMLEntity entity;
+    std::cout << "No of Attributes: 0" << std::endl; // No attributes in EndElement
     entity.DType = SXMLEntity::EType::EndElement;
     entity.DNameData = name;
     
     // Log the end element and the number of attributes
     //std::cout << "EndElement: " << name << std::endl;
-    std::cout << "No of Attributes: 0" << std::endl; // No attributes in EndElement
     
     impl->CurrentEntity = entity;
     impl->EntityReady = true;
