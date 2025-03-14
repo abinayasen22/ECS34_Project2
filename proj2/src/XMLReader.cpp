@@ -82,10 +82,10 @@ void CXMLReader::SImplementation::StartElementHandler(void *userData, const char
 
     // Log the element name first
     std::cout << "StartElement: " << name << std::endl;
-    
+
+    // Count and log the number of attributes
     int numAttrs = 0;
     std::string attrStr;
-    // Process attributes
     while (atts[numAttrs]) {
         std::string attrName = atts[numAttrs];
         std::string attrValue = atts[numAttrs + 1];
@@ -112,13 +112,15 @@ void CXMLReader::SImplementation::StartElementHandler(void *userData, const char
 void CXMLReader::SImplementation::EndElementHandler(void *userData, const char *name) {
     SImplementation *impl = static_cast<SImplementation*>(userData);
     SXMLEntity entity;
-    std::cout << "No of Attributes: 0" << std::endl; // No attributes in EndElement
     entity.DType = SXMLEntity::EType::EndElement;
     entity.DNameData = name;
-    
-    // Log the end element and the number of attributes
-    //std::cout << "EndElement: " << name << std::endl;
-    
+
+    // Log the end element first
+    std::cout << "EndElement: " << name << std::endl;
+
+    // Log number of attributes (always 0 for EndElement)
+    std::cout << "No of Attributes: 0" << std::endl;
+
     impl->CurrentEntity = entity;
     impl->EntityReady = true;
 }
