@@ -40,19 +40,19 @@ $(OBJDIR)/%.o: $(TESTDIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # link executables
-# $(BINDIR)/teststrutils: $(OBJDIR)/StringUtils.o $(OBJDIR)/StringUtilsTest.o | $(BINDIR)
-# 	$(CXX) $^ -lgtest -lgtest_main -o $@
+$(BINDIR)/teststrutils: $(OBJDIR)/StringUtils.o $(OBJDIR)/StringUtilsTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-# $(BINDIR)/teststrdatasource: $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSourceTest.o | $(BINDIR)
-# 	$(CXX) $^ -lgtest -lgtest_main -o $@
+$(BINDIR)/teststrdatasource: $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSourceTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-# $(BINDIR)/teststrdatasink: $(OBJDIR)/StringDataSink.o $(OBJDIR)/StringDataSinkTest.o | $(BINDIR)
-# 	$(CXX) $^ -lgtest -lgtest_main -o $@
+$(BINDIR)/teststrdatasink: $(OBJDIR)/StringDataSink.o $(OBJDIR)/StringDataSinkTest.o | $(BINDIR)
+	$(CXX) $^ -lgtest -lgtest_main -o $@
 
 $(BINDIR)/testdsv: $(OBJDIR)/DSVReader.o $(OBJDIR)/DSVWriter.o $(OBJDIR)/DSVTest.o $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSink.o | $(BINDIR)
 	$(CXX) $^ -lgtest -lgtest_main -o $@
 
-$(BINDIR)/testxml: $(OBJDIR)/XMLReader.o $(OBJDIR)/XMLWriter.o $(OBJDIR)/XMLTest.o $(OBJDIR)/StringDataSource.o | $(BINDIR)
+$(BINDIR)/testxml: $(OBJDIR)/XMLReader.o $(OBJDIR)/XMLWriter.o $(OBJDIR)/XMLTest.o $(OBJDIR)/StringDataSource.o $(OBJDIR)/StringDataSink.o| $(BINDIR)
 	$(CXX) $^ -lgtest -lgtest_main -lexpat -o $@
 
 # run
