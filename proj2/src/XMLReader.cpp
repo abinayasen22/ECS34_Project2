@@ -15,6 +15,7 @@ struct CXMLReader::SImplementation {
     SXMLEntity CurrentEntity; // Stores the current parsed entity
     bool EntityReady; // Indicates if an entity is ready to be processed
     bool SkipCData; // Determines whether to skip character data (CDATA)
+    std::stringstream logStream;
 
     // Constructor initializes the parser and sets handlers
     SImplementation(std::shared_ptr<CDataSource> src)
@@ -81,7 +82,7 @@ void CXMLReader::SImplementation::StartElementHandler(void *userData, const char
     entity.DNameData = name;
 
     // Log the element name first
-    std::cout << "StartElement: " << name << std::endl;
+    impl->logStream << "StartElement: " << name << std::endl;
 
     // Count and log the number of attributes
     int numAttrs = 0;
@@ -97,11 +98,11 @@ void CXMLReader::SImplementation::StartElementHandler(void *userData, const char
     }
 
     // Log number of attributes first
-    std::cout << "No of Attributes: " << numAttrs / 2 << std::endl;
+    impl->logStream << "No of Attributes: " << numAttrs / 2 << std::endl;
 
     // Then log the attributes if available
     if (!attrStr.empty()) {
-        std::cout << attrStr << std::endl;
+        impl->logStream << attrStr << std::endl;
     }
     
     impl->CurrentEntity = entity;
@@ -116,10 +117,10 @@ void CXMLReader::SImplementation::EndElementHandler(void *userData, const char *
     entity.DNameData = name;
 
     // Log the end element first
-    //std::cout << "EndElement: " << name << std::endl;
+    impl->logStream << "EndElement: " << name << std::endl;
 
     // Log number of attributes (always 0 for EndElement)
-    std::cout << "No of Attributes: 0" << std::endl;
+    impl->logStream << "No of Attributes: 0" << std::endl;
 
     impl->CurrentEntity = entity;
     impl->EntityReady = true;
@@ -135,7 +136,7 @@ void CXMLReader::SImplementation::CharDataHandler(void *userData, const char *da
     entity.DNameData.assign(data, len);
     
     // Log the character data
-    std::cout << "CharData: " << entity.DNameData << std::endl;
+    impl->logStream << "CharData: " << entity.DNameData << std::endl;
     
     impl->CurrentEntity = entity;
     impl->EntityReady = true;
