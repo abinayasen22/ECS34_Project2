@@ -34,17 +34,17 @@ struct CXMLReader::SImplementation {
 };
 
 // Constructor for XML Reader
-CXMLReader::CXMLReader(std::shared_ptr<CDataSource> src) : implementation(std::make_unique<SImplementation>(src)) {}
+CXMLReader::CXMLReader(std::shared_ptr<CDataSource> src) : DImplementation(std::make_unique<SImplementation>(src)) {}
 
 // Destructor for XML Reader
 CXMLReader::~CXMLReader() {}
 
 // Check if the end of file has been reached
-bool CXMLReader::End() const { return implementation->EndOfFile; }
+bool CXMLReader::End() const { return DImplementation->EndOfFile; }
 
 // Read an XML entity from the data source
 bool CXMLReader::ReadEntity(SXMLEntity &entity, bool skipcdata) {
-    return implementation->ReadEntity(entity, skipcdata);
+    return DImplementation->ReadEntity(entity, skipcdata);
 }
 
 bool CXMLReader::SImplementation::ReadEntity(SXMLEntity &entity, bool skipcdata) {

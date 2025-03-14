@@ -80,7 +80,7 @@ struct CXMLWriter::SImplementation {
 
 // Constructor: Initializes the implementation with a data sink
 CXMLWriter::CXMLWriter(std::shared_ptr<CDataSink> sink)
-    : implementation(std::make_unique<SImplementation>(std::move(sink))) {}
+    : DImplementation(std::make_unique<SImplementation>(std::move(sink))) {}
 
 // Destructor: Ensures all open elements are closed
 CXMLWriter::~CXMLWriter() {
@@ -89,12 +89,12 @@ CXMLWriter::~CXMLWriter() {
 
 // Flush all open elements by writing their end tags
 bool CXMLWriter::Flush() {
-    while (!implementation->DElementStack.empty()) {
-        std::string name = implementation->DElementStack.back();
-        implementation->DElementStack.pop_back();
-        implementation->DBuffer << "</" << name << ">"; // Write end tag
+    while (!DImplementation->DElementStack.empty()) {
+        std::string name = DImplementation->DElementStack.back();
+        DImplementation->DElementStack.pop_back();
+        DImplementation->DBuffer << "</" << name << ">"; // Write end tag
     }
-    implementation->FlushBuffer(); // Flush the buffer
+    DImplementation->FlushBuffer(); // Flush the buffer
     return true;
 }
 
@@ -102,20 +102,20 @@ bool CXMLWriter::Flush() {
 bool CXMLWriter::WriteEntity(const SXMLEntity &entity) {
     switch (entity.DType) {
         case SXMLEntity::EType::StartElement:
-            implementation->WriteStartElement(entity.DNameData, entity.DAttributes);
-            implementation->DElementStack.push_back(entity.DNameData); // Track open element
+            DImplementation->WriteStartElement(entity.DNameData, entity.DAttributes);
+            DImplementation->DElementStack.push_back(entity.DNameData); // Track open element
             break;
         case SXMLEntity::EType::EndElement:
-            if (!implementation->DElementStack.empty() && implementation->DElementStack.back() == entity.DNameData) {
-                implementation->DElementStack.pop_back(); // Remove from stack
+            if (!DImplementation->DElementStack.empty() && DImplementation->DElementStack.back() == entity.DNameData) {
+                DImplementation->DElementStack.pop_back(); // Remove from stack
             }
-            implementation->WriteEndElement(entity.DNameData);
+            DImplementation->WriteEndElement(entity.DNameData);
             break;
         case SXMLEntity::EType::CompleteElement:
-            implementation->WriteCompleteElement(entity.DNameData, entity.DAttributes);
+            DImplementation->WriteCompleteElement(entity.DNameData, entity.DAttributes);
             break;
         case SXMLEntity::EType::CharData:
-            implementation->WriteString(entity.DNameData);
+            DImplementation->WriteString(entity.DNameData);
             break;
         default:
             return false; // Invalid entity type
