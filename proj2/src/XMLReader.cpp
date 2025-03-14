@@ -54,12 +54,12 @@ struct CXMLReader::SImplementation {
         SImplementation *implementation = static_cast<SImplementation*>(userData);
         SXMLEntity entity;  // entity for parsed data
         entity.DType = SXMLEntity::EType::StartElement; // set entity type to start element
-        entity.DNameData = name;
+        entity.DNameData = UnescapeXML(name);
 
         while (*attrs) {    //add atributes to entity
             std::string attrName = *attrs++;
             std::string attrValue = *attrs++;
-            entity.SetAttribute(attrName, attrValue);
+            entity.SetAttribute(attrName, UnescapeXML(attrValue));
         }
 
         implementation->entityQueue.push(entity);
@@ -69,7 +69,7 @@ struct CXMLReader::SImplementation {
         SImplementation *implementation = static_cast<SImplementation*>(userData);
         SXMLEntity entity;
         entity.DType = SXMLEntity::EType::EndElement;
-        entity.DNameData = name;
+        entity.DNameData = UnescapeXML(name);
 
         implementation->entityQueue.push(entity);
     }
@@ -77,10 +77,11 @@ struct CXMLReader::SImplementation {
     static void CharDataHand(void *userData, const char *data, int len) {
         SImplementation *implementation = static_cast<SImplementation*>(userData);
         std::string charData(data, len);    // character data to string
+        charData = UnescapeXML(charData);
         if (!charData.empty() && charData.find_first_not_of(" \t\n\r") != std::string::npos) {  // ignore empty data
             SXMLEntity entity;
             entity.DType = SXMLEntity::EType::CharData;
-            entity.DNameData = charData;    // stores char data
+            entity.DNameData = UnescapeXML(charData);    // stores char data
             implementation->entityQueue.push(entity); 
         }
     }
