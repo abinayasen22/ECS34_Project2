@@ -1,0 +1,1 @@
+https://scrapingant.com/blog/c-plus-plus-parse-xml
