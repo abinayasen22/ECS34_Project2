@@ -19,6 +19,36 @@ struct CXMLReader::SImplementation {
     ~SImplementation() {
         XML_ParserFree(parser);
     }
+    //convert escaped entities back to their og chars
+    static std::string UnescapeXML(const std::string &str) {
+        std::string result;
+        result.reserve(str.size());   // reserves memory for ressult
+        for (size_t i = 0; i < str.size(); ++i) {
+            if (str[i] == '&') {
+                if (str.substr(i, 4) == "&lt;") {
+                    result += '<';  
+                    i += 3;
+                } else if (str.substr(i, 4) == "&gt;") {
+                    result += '>';
+                    i += 3;
+                } else if (str.substr(i, 5) == "&amp;") {
+                    result += '&';
+                    i += 4;
+                } else if (str.substr(i, 6) == "&quot;") {
+                    result += '"';
+                    i += 5;
+                } else if (str.substr(i, 6) == "&apos;") {
+                    result += '\'';
+                    i += 5;
+                } else {
+                    result += str[i];
+                }
+            } else {
+                result += str[i];
+            }
+        }
+        return result;
+    }
 
     static void StartEHand(void *userData, const char *name, const char **attrs) {
         SImplementation *implementation = static_cast<SImplementation*>(userData);
