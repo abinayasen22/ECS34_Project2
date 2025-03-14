@@ -78,7 +78,6 @@ bool CXMLReader::ReadEntity(SXMLEntity &entity, bool skipcdata) {
 
         if (wasRead) {
             int len = buf.size();
-            std::cout << "Read " << len << " bytes from source." << std::endl;
             // parsing
             if (XML_Parse(implementation->parser, buf.data(), len, XML_FALSE) == XML_STATUS_ERROR) {
                 return false;   //parse failed
@@ -95,7 +94,6 @@ bool CXMLReader::ReadEntity(SXMLEntity &entity, bool skipcdata) {
 
     // If entity queue is empty and parseEnd is true, parsing done
     if (implementation->entityQueue.empty() && implementation->parseEnd) {
-        std::cout << "Parsing complete. No more entities to process." << std::endl;
         return false;
     }
 
