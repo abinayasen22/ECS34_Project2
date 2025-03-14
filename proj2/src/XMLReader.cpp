@@ -2,6 +2,7 @@
 #include <expat.h>
 #include <vector>
 #include <deque>
+#include <sstream>
 #include <stdexcept>
 
 struct CXMLReader::SImplementation {
@@ -35,14 +36,10 @@ struct CXMLReader::SImplementation {
 
     static void EndElementHandler(void *userData, const XML_Char *name) {
         auto *self = static_cast<SImplementation*>(userData);
-        if (!self->DEntities.empty() && self->DEntities.back().DType == SXMLEntity::EType::StartElement && self->DEntities.back().DNameData == name) {
-            self->DEntities.back().DType = SXMLEntity::EType::CompleteElement;
-        } else {
-            SXMLEntity entity;
-            entity.DType = SXMLEntity::EType::EndElement;
-            entity.DNameData = name;
-            self->DEntities.push_back(entity);
-        }
+        SXMLEntity entity;
+        entity.DType = SXMLEntity::EType::EndElement;
+        entity.DNameData = name;
+        self->DEntities.push_back(entity);
     }
 
     static void CharacterDataHandler(void *userData, const XML_Char *s, int len) {
@@ -57,15 +54,17 @@ struct CXMLReader::SImplementation {
     }
 
     bool ParseChunk() {
-        std::vector<char> buffer(4096); // Create a vector to hold the data
+        std::vector<char> buffer(4096);
         size_t bytesRead = DDataSource->Read(buffer, buffer.size()); // Pass the vector directly
         if (bytesRead > 0) {
-            // Parse the chunk using Expat
-            return XML_Parse(DParser, buffer.data(), bytesRead, XML_FALSE) != XML_STATUS_ERROR;
+            if (XML_Parse(DParser, buffer.data(), bytesRead, bytesRead < buffer.size()) == XML_STATUS_ERROR) {
+                DParsingFinished = true;
+                return false;
+            }
+            return true;
         } else {
-            // Finalize parsing when no more data is available
             XML_Parse(DParser, nullptr, 0, XML_TRUE);
-            DParsingFinished = true; // Mark parsing as finished
+            DParsingFinished = true;
             return true;
         }
     }
@@ -101,6 +100,7 @@ bool CXMLReader::ReadEntity(SXMLEntity &entity, bool skipcdata) {
         }
     }
 }
+
 // CXMLReader::CXMLReader(std::shared_ptr< CDataSource > /*src*/) {
 //     // You can initialize your internal state here if needed, using 'src'
 // }
